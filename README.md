@@ -1,3 +1,15 @@
+## Hackathon Submission Disclaimer
+
+This repository is being shared for the purpose of hackathon submission, demonstration, and evaluation by the judges. The source code is provided solely to allow reviewers to assess the project's implementation and functionality.
+
+Following the completion of the judging and review process, this repository and its contents are intended to be removed or made private, subject to the hackathon's rules and requirements.
+
+**All rights reserved.** No permission is granted to copy, modify, redistribute, or reuse this project's source code without prior written permission from the copyright holder, except where otherwise required by applicable law or hackathon rules.
+
+This project may contain pre-existing work and third-party components, which remain subject to their respective ownership and licensing terms.
+
+---
+
 # SecureAuthX
 ### Browser Security, Password Management & Website Privacy Analysis
 

@@ -25,7 +25,7 @@ The project aims to make everyday browsing safer by making website risks easier 
 
 The demonstration video showcases SecureAuthX's existing password-management and website security-analysis features.
 
-**Video:** [Watch the SecureAuthX Demo](/docs/video1.webm)
+**Video:** [Watch the SecureAuthX Demo](https://youtu.be/SNXHSza53pY)
 
 *This video is provided for hackathon submission and evaluation. Any proposed features shown are labelled accordingly and should not be interpreted as implemented functionality.*
 

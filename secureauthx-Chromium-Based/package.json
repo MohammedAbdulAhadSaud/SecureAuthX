@@ -1,0 +1,14 @@
+{
+  "name": "secureauthx",
+  "private": true,
+  "type": "module",
+  "description": "SecureAuthX Chrome extension — test tooling. The extension itself has no runtime dependencies; this file exists only for the Batch 4 Phase 1 automated test suite.",
+  "scripts": {
+    "test": "node --test tests/batch2.test.js tests/batch3.test.js tests/batch3-signal-buffer.test.js tests/batch4-phase2a.test.js tests/batch5-vault.test.js",
+    "test:e2e": "xvfb-run --auto-servernum playwright test",
+    "test:all": "npm run test && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0"
+  }
+}

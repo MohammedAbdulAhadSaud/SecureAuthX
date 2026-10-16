@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Font Enumeration POSITIVE</title>
+</head>
+<body>
+  <h1>Font Enumeration Detector — POSITIVE</h1>
+  <p>Calls <code>ctx.measureText(...)</code> 20 times on a single canvas
+  context — above the detector's existing, unchanged threshold of "more
+  than 15 calls in one page load" (fires on the 16th call).</p>
+  <button id="runBtn">Run</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const candidateFonts = [
+        "Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana",
+        "Georgia", "Palatino", "Garamond", "Bookman", "Comic Sans MS",
+        "Trebuchet MS", "Arial Black", "Impact", "Tahoma", "Segoe UI",
+        "Calibri", "Cambria", "Consolas", "Lucida Console", "Century Gothic",
+      ];
+      for (const font of candidateFonts) {
+        ctx.font = `14px "${font}"`;
+        ctx.measureText("mmmmmmmmmmlli");
+      }
+      document.getElementById("result").textContent = `measureText called ${candidateFonts.length} times`;
+    });
+  </script>
+</body>
+</html>

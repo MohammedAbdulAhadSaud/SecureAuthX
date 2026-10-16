@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Client Hints NEGATIVE / Control</title>
+</head>
+<body>
+  <h1>Client Hints High-Entropy — NEGATIVE / Control</h1>
+  <p>Requests only ONE common high-entropy field
+  (<code>platformVersion</code>) — representing an ordinary OS-targeted
+  download page, which is below the detector's 2-field threshold.</p>
+  <button id="runBtn">Run</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", async () => {
+      if (!navigator.userAgentData) {
+        document.getElementById("result").textContent = "userAgentData not available in this browser";
+        return;
+      }
+      await navigator.userAgentData.getHighEntropyValues(["platformVersion"]);
+      document.getElementById("result").textContent = "call executed (single field)";
+    });
+  </script>
+</body>
+</html>

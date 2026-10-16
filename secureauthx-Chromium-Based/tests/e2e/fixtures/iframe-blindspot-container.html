@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Iframe Blind Spot (container)</title>
+</head>
+<body>
+  <h1>Iframe blind-spot container page</h1>
+  <p>
+    <strong>This top-level page performs NO fingerprinting behavior of its
+    own.</strong> The only fingerprinting call anywhere on this page tree
+    happens inside the iframe below, in its own separate document
+    (<code>iframe-blindspot-inner.html</code>). Any detection that occurs
+    when this page is scanned can only have come from inside that iframe.
+  </p>
+  <p>
+    <strong>Historical note (Phase 2B-A, now fixed in Phase 2B):</strong>
+    this page was originally built to document a known limitation —
+    SecureAuthX's content scripts did not run inside iframes, so the
+    fingerprinting call made inside the iframe below was invisible to the
+    extension. As of Phase 2B, <code>all_frames</code> is enabled and
+    background.js aggregates fingerprint techniques across frames, so
+    this same iframe-only call is now correctly detected. This page is
+    kept as the same fixture that documented the original gap, now
+    serving as the regression test confirming the fix.
+  </p>
+  <iframe src="iframe-blindspot-inner.html" width="400" height="150" title="iframe blind spot inner content"></iframe>
+</body>
+</html>

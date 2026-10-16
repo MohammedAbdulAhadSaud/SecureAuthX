@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Duplicate Technique Across Frames (dedup)</title>
+</head>
+<body>
+  <h1>Duplicate technique across two iframes</h1>
+  <p>
+    Two SEPARATE iframes, both loading the SAME fixture
+    (<code>iframe-blindspot-inner.html</code>), both independently
+    performing the identical <code>timezone</code> fingerprinting call in
+    their own separate frames. Expected result: the aggregated popup
+    result shows <code>timezone</code> exactly ONCE, not twice —
+    deduplication across frames, not just within a single frame.
+  </p>
+  <iframe src="iframe-blindspot-inner.html" width="400" height="150" title="iframe A"></iframe>
+  <iframe src="iframe-blindspot-inner.html" width="400" height="150" title="iframe B"></iframe>
+</body>
+</html>

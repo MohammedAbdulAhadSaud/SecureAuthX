@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><title>SecureAuthX E2E — Vault iframe host</title></head>
+<body>
+  <h1>Top-level page with NO login form of its own</h1>
+  <p>The only login form is inside the iframe below. Vault autofill must never reach it.</p>
+  <iframe id="inner" src="vault-login-target.html" width="400" height="200" title="login form in an iframe"></iframe>
+</body>
+</html>

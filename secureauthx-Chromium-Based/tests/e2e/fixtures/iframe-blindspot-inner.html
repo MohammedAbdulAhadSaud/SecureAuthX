@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Iframe Blind Spot (inner content)</title>
+</head>
+<body>
+  <h1>Iframe inner content</h1>
+  <p>This page is loaded ONLY inside an iframe by
+  <code>iframe-blindspot-container.html</code>. It performs the exact same
+  already-supported Batch 3 fingerprinting call already proven in
+  <code>timezone-positive.html</code> — automatically on load, with no
+  button needed, since the point here is coverage reach, not re-testing
+  the detector's trigger mechanics.</p>
+  <div id="result">not run yet</div>
+  <script>
+    // Never display the actual timezone value -- only that the call executed.
+    Intl.DateTimeFormat().resolvedOptions().timeZone;
+    document.getElementById("result").textContent = "call executed inside iframe";
+  </script>
+</body>
+</html>

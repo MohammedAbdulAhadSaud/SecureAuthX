@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Robustness: malformed Client Hints arguments</title>
+</head>
+<body>
+  <h1>Robustness: malformed Client Hints arguments</h1>
+  <p>Calls <code>navigator.userAgentData.getHighEntropyValues()</code> with
+  several malformed/unexpected argument shapes, then makes one real,
+  legitimate multi-field request. The extension must not crash, and must
+  still correctly detect the real call.</p>
+  <button id="runBtn">Run malformed calls, then a real one</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", async () => {
+      if (!navigator.userAgentData) {
+        document.getElementById("result").textContent = "userAgentData not available in this browser";
+        return;
+      }
+      const attempts = [undefined, null, "not-an-array", 42, {}, []];
+      for (const arg of attempts) {
+        try { await navigator.userAgentData.getHighEntropyValues(arg); } catch { /* expected for some shapes */ }
+      }
+      // A real, legitimate multi-field request after the malformed ones.
+      await navigator.userAgentData.getHighEntropyValues(["model", "architecture"]);
+      document.getElementById("result").textContent = "malformed calls + one real call completed";
+    });
+  </script>
+</body>
+</html>

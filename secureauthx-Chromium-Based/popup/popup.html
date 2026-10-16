@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX</title>
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ONBOARDING: shown once, before any Master Profile exists -->
+  <section id="onboarding" class="onboarding hidden">
+    <div class="sax-brand" style="margin-bottom:10px;">
+      <span class="sax-dot"></span><span>SecureAuthX Setup</span>
+    </div>
+<p class="footnote">
+Welcome to SecureAuthX. Create your first Master Profile.
+</p>
+
+<div class="security-tip">
+    <strong><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Security Tip</strong><br>
+Your master password is never stored and cannot be recovered.
+Store it somewhere safe.
+
+</div>
+    <div class="field">
+      <label for="obProfileName">Profile name</label>
+      <input type="text" id="obProfileName" value="Personal" />
+    </div>
+    <div class="field">
+      <label for="obMaster1">Create master password</label>
+      <input type="password" id="obMaster1" autocomplete="off" />
+      <div class="footnote">
+  Minimum 8 characters long is recommended.
+</div>
+    </div>
+    <div class="field">
+      <label for="obMaster2">Confirm master password</label>
+      <input type="password" id="obMaster2" autocomplete="off" />
+    </div>
+    <div id="obError" class="warning-box hidden"></div>
+    <button id="obSaveBtn" class="primary-btn">Create Profile</button>
+  </section>
+
+  <div id="appRoot" class="hidden">
+  <header class="sax-header">
+    <div class="sax-brand">
+      <span class="sax-dot"></span>
+      <span>SecureAuthX</span>
+    </div>
+    <button id="themeToggle" class="icon-btn" title="Toggle theme"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18z" fill="currentColor" stroke="none"/></svg></button>
+  </header>
+
+  <nav class="sax-tabs">
+    <button class="tab-btn active" data-tab="passwords">Password Manager</button>
+    <button class="tab-btn" data-tab="analysis">Site Analysis</button>
+    <button class="tab-btn" data-tab="manage">Profiles</button>
+    <button class="tab-btn" data-tab="vault">Vault</button>
+  </nav>
+
+  <main class="sax-content">
+
+    <!-- PASSWORD MANAGER TAB: profile, site, account, generate/copy — never displays passwords -->
+    <section id="tab-passwords" class="tab-panel active">
+      <div class="section-title"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg> Password Manager</div>
+
+      <div class="field">
+        <label>Master Profile</label>
+        <div id="profileList" class="option-grid"></div>
+      </div>
+
+      <div class="field">
+        <label for="siteOrigin">Current Website</label>
+        <input type="text" id="siteOrigin" readonly />
+      </div>
+
+<div class="field">
+
+  <div id="maxAccountsNote" class="max-accounts-note hidden">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg> Maximum of 5 accounts reached for this site.
+  </div>
+
+  <label>Account</label>
+
+  <div id="accountList" class="option-grid"></div>
+
+  <div id="addAccountRow" class="add-account-row">
+    <button id="showAddAccountBtn" class="add-link-btn" type="button">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add Account
+    </button>
+
+    <input
+      type="text"
+      id="newAccountInput"
+      class="hidden"
+      placeholder="Enter account name"
+      maxlength="40"
+      autocomplete="off"
+    />
+  </div>
+
+  <div id="accountError" class="warning-box hidden"></div>
+
+</div>
+      <div class="status-row">
+        <span id="profileStatusIcon"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+        <span id="profileStatusText">Locked</span>
+      </div>
+
+      <div id="lockedFields">
+        <div class="field">
+          <label for="masterPassword">Master Password</label>
+          <input type="password" id="masterPassword" placeholder="Never stored, never sent anywhere" autocomplete="off" />
+        </div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="rememberSessionCheckbox" />
+          <span>Unlock for this browser session (up to 30 min of inactivity)</span>
+        </label>
+      </div>
+
+      <button id="lockSessionBtn" class="secondary-btn hidden"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Lock Session</button>
+
+      <hr class="section-divider" />
+
+      <button id="deriveBtn" class="primary-btn">Generate &amp; Autofill</button>
+      <button id="copyBtn" class="secondary-btn">Copy</button>
+
+      <hr class="section-divider" />
+
+      <div id="generateSuccess" class="success-box hidden"></div>
+      <div id="generateError" class="warning-box hidden"></div>
+      <div id="reuseWarning" class="warning-box hidden"></div>
+
+      <details class="collapsible" style="margin-top:16px;">
+        <summary>Password Strength Checker</summary>
+        <div class="detail-list" style="padding-top:10px;">
+          <div class="field">
+            <label for="strengthInput">Check a password's strength</label>
+            <input type="password" id="strengthInput" placeholder="Type a password to analyze" autocomplete="off" />
+          </div>
+          <div class="meter-track"><div id="strengthMeterFill" class="meter-fill"></div></div>
+          <div id="strengthLabel" class="strength-label">—</div>
+          <div id="strengthDetails" class="details-box"></div>
+        </div>
+      </details>
+    </section>
+
+    <!-- SITE ANALYSIS TAB (Dashboard: trackers, headers, cookies, permissions, fingerprinting) -->
+    <section id="tab-analysis" class="tab-panel">
+      <div id="dashboardLoading" class="footnote">Running automatic analysis…</div>
+
+      <div id="dashboardContent" class="hidden">
+        <div class="score-grid">
+          <div class="score-tile">
+            <div class="score-tile-value" id="dashSecurity">—</div>
+            <div class="score-tile-label">Security</div>
+          </div>
+          <div class="score-tile">
+            <div class="score-tile-value" id="dashPrivacy">—</div>
+            <div class="score-tile-label">Privacy</div>
+          </div>
+          <div class="score-tile">
+            <div class="score-tile-value" id="dashPhishing">—</div>
+            <div class="score-tile-label">Phishing Risk</div>
+          </div>
+          <div class="score-tile">
+            <div class="score-tile-value" id="dashTrust">—</div>
+            <div class="score-tile-label">Trust</div>
+          </div>
+        </div>
+
+        <p class="score-polarity-hint">Security, Privacy, and Trust: higher is better. Phishing Risk: higher means more risk.</p>
+
+        <div id="dashRiskBadge" class="risk-badge">—</div>
+
+        <div class="explain-box">
+          <div class="section-title">Safe Browsing Assistant <span class="hint">(rule-based, local — not a live AI call. See README.)</span></div>
+          <div id="dashSummaryHeadline" class="summary-headline"></div>
+          <ul id="dashSummaryBullets" class="summary-bullets"></ul>
+          <div id="dashSummaryAdvice" class="summary-advice"></div>
+        </div>
+
+        <div id="dashVisitInfo" class="visit-info"></div>
+
+        <details class="collapsible">
+          <summary>Security findings <span id="findingsCount" class="count-badge"></span></summary>
+          <div id="findingsList" class="detail-list"></div>
+        </details>
+
+        <details class="collapsible" open>
+          <summary>Trackers <span id="trackerCount" class="count-badge"></span></summary>
+          <div id="trackerList" class="detail-list"></div>
+        </details>
+
+        <details class="collapsible">
+          <summary>Security Headers <span id="headerCount" class="count-badge"></span></summary>
+          <div id="headerList" class="detail-list"></div>
+        </details>
+
+        <details class="collapsible">
+          <summary>Cookies <span id="cookieCount" class="count-badge"></span></summary>
+          <div id="cookieList" class="detail-list"></div>
+        </details>
+
+        <details class="collapsible">
+          <summary>Permissions &amp; Privacy Access</summary>
+          <div id="permissionList" class="detail-list"></div>
+        </details>
+
+        <details class="collapsible">
+          <summary>Fingerprinting <span id="fingerprintCount" class="count-badge"></span></summary>
+          <div id="fingerprintList" class="detail-list"></div>
+        </details>
+
+        <details class="collapsible">
+          <summary>Network Activity</summary>
+          <div id="networkList" class="detail-list"></div>
+        </details>
+      </div>
+
+      <button id="rescanBtn" class="secondary-btn">Re-scan This Page</button>
+      <p class="footnote">
+        All checks run locally against the active tab. Tracker matching uses
+        a static local signature list (not a live threat-intel feed).
+        Phishing risk here is heuristic (typosquat/lookalike + form-target
+        checks) — see README "Scope Decisions" for what's out of scope.
+      </p>
+    </section>
+
+    <!-- PROFILES TAB: simplified Master Profile management + Saved Sites -->
+    <section id="tab-manage" class="tab-panel">
+      <div class="section-title"><svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg> Master Profiles</div>
+      <p class="footnote" style="margin-top:0;">Manage your SecureAuthX profiles.</p>
+
+      <div id="profilesList" class="profiles-list"></div>
+
+      <div id="addProfilePanel" class="add-profile-panel hidden">
+        <div class="field">
+          <label for="newProfileName">Profile name</label>
+          <input type="text" id="newProfileName" placeholder="e.g. Work" maxlength="40" />
+        </div>
+        <div class="field">
+          <label for="newProfilePw1">Master password</label>
+          <input type="password" id="newProfilePw1" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="newProfilePw2">Confirm master password</label>
+          <input type="password" id="newProfilePw2" autocomplete="off" />
+        </div>
+        <div id="addProfileError" class="warning-box hidden"></div>
+        <div class="field-row">
+          <button id="addProfileSaveBtn" class="primary-btn">Save Profile</button>
+          <button id="addProfileCancelBtn" class="secondary-btn">Cancel</button>
+        </div>
+      </div>
+
+      <button id="showAddProfileBtn" class="secondary-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add Profile</button>
+
+      <hr class="section-divider" />
+
+      <details class="collapsible">
+        <summary>Saved Sites <span id="sitesCountBadge" class="count-badge"></span></summary>
+        <div id="sitesList" class="sites-list detail-list"></div>
+      </details>
+    </section>
+
+    <!-- VAULT TAB (Phase 3B): minimal functional UI only; final redesign is a later phase. -->
+    <section id="tab-vault" class="tab-panel">
+      <div class="section-title"><svg class="icon icon-lg" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Vault</div>
+      <p class="footnote" style="margin-top:0;">A 100% local, encrypted credential vault for this Master Profile. Nothing here is ever sent anywhere.</p>
+
+      <div id="vaultLockedView">
+        <div class="field">
+          <label for="vaultUnlockPassword">Master Password</label>
+          <input type="password" id="vaultUnlockPassword" autocomplete="off" placeholder="Enter this profile's master password" />
+        </div>
+        <button id="vaultUnlockBtn" class="primary-btn">Unlock Vault</button>
+        <div id="vaultUnlockError" class="warning-box hidden"></div>
+      </div>
+
+      <div id="vaultUnlockedView" class="hidden">
+        <div class="status-row">
+          <span>Vault unlocked</span>
+          <button id="vaultLockBtn" class="secondary-btn" style="margin-left:auto;">Lock Now</button>
+        </div>
+        <div id="vaultActionMessage" class="footnote" role="status"></div>
+
+        <div id="vaultMatchesBox" class="hidden">
+          <div class="section-title" style="font-size:13px;">Saved for this site</div>
+          <div id="vaultMatchesList" class="detail-list"></div>
+        </div>
+
+        <hr class="section-divider" />
+        <div class="field">
+          <label for="vaultSearchInput">Search vault</label>
+          <input type="text" id="vaultSearchInput" placeholder="Search by site, username, or label" autocomplete="off" />
+        </div>
+        <div id="vaultItemsList" class="detail-list"></div>
+
+        <hr class="section-divider" />
+        <details class="collapsible">
+          <summary>Add a credential</summary>
+          <div class="detail-list" style="padding-top:10px;">
+            <div class="field"><label for="vaultNewSite">Site (domain)</label><input type="text" id="vaultNewSite" placeholder="example.com" autocomplete="off" /></div>
+            <div class="field"><label for="vaultNewUsername">Username</label><input type="text" id="vaultNewUsername" autocomplete="off" /></div>
+            <div class="field"><label for="vaultNewSecret">Password</label><input type="text" id="vaultNewSecret" autocomplete="off" /></div>
+            <button id="vaultGenerateBtn" class="secondary-btn" type="button">Generate Random Password</button>
+            <div class="field"><label for="vaultNewAccountLabel">Account label (optional)</label><input type="text" id="vaultNewAccountLabel" maxlength="40" autocomplete="off" /></div>
+            <div class="field"><label for="vaultNewNotes">Notes (optional)</label><input type="text" id="vaultNewNotes" maxlength="2000" autocomplete="off" /></div>
+            <div id="vaultAddError" class="warning-box hidden"></div>
+            <button id="vaultAddBtn" class="primary-btn" type="button">Save Credential</button>
+          </div>
+        </details>
+
+        <hr class="section-divider" />
+        <div class="field-row">
+          <button id="vaultExportBtn" class="secondary-btn">Export Encrypted Vault</button>
+          <button id="vaultImportBtn" class="secondary-btn">Import Encrypted Vault</button>
+        </div>
+        <input type="file" id="vaultImportFile" accept="application/json" class="hidden" />
+        <p class="footnote">Export produces an ENCRYPTED file, never plaintext credentials. <strong>If the master password is lost, the vault cannot be recovered.</strong></p>
+      </div>
+    </section>
+
+  </main>
+  </div><!-- /appRoot -->
+
+  <!-- Secure Profile Deletion modal — always requires re-verifying that profile's master password -->
+  <div id="deleteProfileModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="section-title">Delete Master Profile</div>
+      <div class="field">
+        <label>Profile</label>
+        <div id="deleteProfileName" class="modal-profile-name"></div>
+      </div>
+      <p class="footnote" style="margin-top:0;">The following will be permanently deleted:</p>
+      <ul class="delete-list">
+        <li>Master Profile</li>
+        <li>Saved websites</li>
+        <li>Account identities</li>
+        <li>Active session</li>
+        <li>Cached profile data</li>
+        <li>Profile preferences</li>
+      </ul>
+      <p class="footnote" style="margin-top:0;"><strong>This action cannot be undone.</strong></p>
+      <div class="field">
+        <label for="deleteProfilePassword">Master Password</label>
+        <input type="password" id="deleteProfilePassword" autocomplete="off" />
+      </div>
+      <div id="deleteProfileError" class="warning-box hidden"></div>
+      <div class="field-row">
+        <button id="deleteProfileCancelBtn" class="secondary-btn">Cancel</button>
+        <button id="deleteProfileConfirmBtn" class="danger-btn">Delete Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../lib/vendor/browser-polyfill.js"></script>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

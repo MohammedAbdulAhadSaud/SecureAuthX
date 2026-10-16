@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Timezone POSITIVE</title>
+</head>
+<body>
+  <h1>Timezone Detector — POSITIVE</h1>
+  <p>Calls <code>Intl.DateTimeFormat().resolvedOptions().timeZone</code> — the
+  exact call already validated against the real detector during Batch 3.</p>
+  <button id="runBtn">Run</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // Never display the actual timezone value -- only that the call
+      // executed. Data minimization applies to test fixtures too.
+      document.getElementById("result").textContent = "call executed";
+    });
+  </script>
+</body>
+</html>

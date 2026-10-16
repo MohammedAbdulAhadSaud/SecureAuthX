@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX Batch 3 — Audio NEGATIVE / Control Test (LOCAL DIAGNOSTIC ONLY)</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; margin-top: 24px; }
+  .notice {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .steps {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid #999;
+    background: #f0f0f0;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 20px;
+    background: #fff;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  th { background: #f5f5f5; }
+  .yes { color: #1b5e20; font-weight: 600; }
+  .no { color: #c62828; font-weight: 600; }
+</style>
+</head>
+<body>
+
+  <h1>Audio Fingerprint Detector — NEGATIVE / Control Test</h1>
+
+  <div class="notice">
+    <strong>Local diagnostic page only.</strong> Not part of SecureAuthX.
+    This page uses ordinary Web Audio: a regular (online) AudioContext
+    playing a brief, quiet tone — the kind any game or notification sound
+    uses — plus a manually-built AudioBuffer that is read with
+    <code>getChannelData()</code>, deliberately WITHOUT ever going through
+    <code>OfflineAudioContext.startRendering()</code>. This exercises the
+    same hooked method (<code>getChannelData</code>) as the positive test,
+    but on a buffer the detector's WeakSet was never told about — proving
+    it distinguishes "reading audio data" in general from "reading data
+    from an offline-rendered buffer" specifically. No OfflineAudioContext
+    is created anywhere on this page. Nothing is sent anywhere.
+  </div>
+
+  <div class="steps">
+    <strong>How to use this page:</strong> open the SecureAuthX popup and
+    check the Fingerprinting section, click "Run Ordinary Audio" below
+    (a brief, quiet tone will play — Chrome requires a user click before
+    audio can start), then re-check the popup. Expected:
+    <code>Fingerprinting 0</code>, "No fingerprinting techniques
+    detected", no <code>audioFingerprint</code> entry.
+  </div>
+
+  <button id="runBtn">Run Ordinary Audio</button>
+
+  <table id="resultsTable">
+    <tr><th>Step</th><th>Result</th></tr>
+    <tr><td>Regular (online) AudioContext created</td><td id="s1"></td></tr>
+    <tr><td>Oscillator connected to destination and played briefly</td><td id="s2"></td></tr>
+    <tr><td>Manually-created AudioBuffer (NOT from OfflineAudioContext)</td><td id="s3"></td></tr>
+    <tr><td>Buffer filled with a simple synthesized tone</td><td id="s4"></td></tr>
+    <tr><td>getChannelData(0) called on that manual buffer</td><td id="s5"></td></tr>
+    <tr><td>OfflineAudioContext used anywhere on this page</td><td id="s6"></td></tr>
+  </table>
+
+  <p id="summary"></p>
+
+  <script>
+    function setCell(id, ok, label) {
+      const el = document.getElementById(id);
+      el.textContent = label;
+      el.className = ok ? "yes" : "no";
+    }
+
+    // Confirmed by reading this file's script: OfflineAudioContext is
+    // never constructed and startRendering() is never called anywhere in
+    // this page's executable code (the word "OfflineAudioContext" only
+    // appears in explanatory text/labels describing what this page does
+    // NOT do).
+    setCell("s6", false, "not used anywhere on this page");
+
+    document.getElementById("runBtn").addEventListener("click", () => {
+      let audioCtx;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        setCell("s1", true, "created");
+      } catch (e) {
+        setCell("s1", false, "threw an error: " + e.message);
+        return;
+      }
+
+      // Ordinary, brief, quiet tone played through the normal (online)
+      // destination -- the kind of thing any web page with sound does.
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime); // quiet
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+        setCell("s2", true, "played a brief 440Hz tone through the normal audio output");
+      } catch (e) {
+        setCell("s2", false, "threw an error: " + e.message);
+      }
+
+      // Manually-created AudioBuffer -- NOT produced by
+      // OfflineAudioContext.startRendering(), so it was never added to
+      // the detector's WeakSet. This is the key boundary case: the same
+      // getChannelData() method is called here as in the positive test,
+      // but on an unrelated buffer.
+      let buffer;
+      try {
+        buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+        setCell("s3", true, "created via audioCtx.createBuffer() directly");
+      } catch (e) {
+        setCell("s3", false, "threw an error: " + e.message);
+        return;
+      }
+
+      try {
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+          data[i] = Math.sin((i / audioCtx.sampleRate) * 440 * 2 * Math.PI) * 0.05;
+        }
+        setCell("s4", true, `filled ${data.length} samples with a synthesized 440Hz tone`);
+      } catch (e) {
+        setCell("s4", false, "threw an error: " + e.message);
+      }
+
+      try {
+        const readBack = buffer.getChannelData(0);
+        setCell("s5", true, `called — read ${readBack.length} samples (this buffer was never produced by OfflineAudioContext.startRendering())`);
+        document.getElementById("summary").textContent =
+          "Sequence complete. Expected: SecureAuthX's Fingerprinting section should still show 0 / no techniques detected.";
+      } catch (e) {
+        setCell("s5", false, "threw an error: " + e.message);
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Nested Iframe (outer)</title>
+</head>
+<body>
+  <h1>Nested iframe — outer page</h1>
+  <p>
+    This top-level page contains an iframe pointing to
+    <code>iframe-nested-middle.html</code>, which itself contains ANOTHER
+    iframe pointing to the existing <code>iframe-blindspot-inner.html</code>
+    fixture (two levels of nesting). Expected result: the fingerprinting
+    call made in the innermost frame is still detected, confirming
+    coverage reaches the entire frame tree, not just direct children.
+  </p>
+  <iframe src="iframe-nested-middle.html" width="450" height="250" title="nested middle frame"></iframe>
+</body>
+</html>

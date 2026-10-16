@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Client Hints POSITIVE</title>
+</head>
+<body>
+  <h1>Client Hints High-Entropy — POSITIVE</h1>
+  <p>Calls <code>navigator.userAgentData.getHighEntropyValues()</code>
+  requesting several high-entropy fields together (<code>model</code>,
+  <code>architecture</code>, <code>platformVersion</code>) — the pattern
+  validated against the real detector in Batch 4 Phase 2A.</p>
+  <button id="runBtn">Run</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", async () => {
+      if (!navigator.userAgentData) {
+        document.getElementById("result").textContent = "userAgentData not available in this browser";
+        return;
+      }
+      await navigator.userAgentData.getHighEntropyValues(["model", "architecture", "platformVersion"]);
+      // Never display the actual returned values -- only that the call executed.
+      document.getElementById("result").textContent = "call executed";
+    });
+  </script>
+</body>
+</html>

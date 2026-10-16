@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — WebGL Extension Enumeration POSITIVE</title>
+</head>
+<body>
+  <h1>WebGL Extension Enumeration — POSITIVE</h1>
+  <p>Calls <code>gl.getSupportedExtensions()</code> and iterates the full
+  returned list — the pattern validated against the real detector in
+  Batch 4 Phase 2A. Distinct from <code>webglDebugInfo</code> (Batch 3),
+  which only fires for the specific debug-renderer-info extension.</p>
+  <button id="runBtn">Run</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (!gl) {
+        document.getElementById("result").textContent = "WebGL not available in this browser";
+        return;
+      }
+      const extensions = gl.getSupportedExtensions() || [];
+      let count = 0;
+      for (const name of extensions) { count++; }
+      // Never display the actual extension list -- only that the call executed.
+      document.getElementById("result").textContent = `call executed, iterated ${count} entries`;
+    });
+  </script>
+</body>
+</html>

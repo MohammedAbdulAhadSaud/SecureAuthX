@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX Batch 3 — WebGL POSITIVE Test (LOCAL DIAGNOSTIC ONLY)</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 680px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; margin-top: 24px; }
+  .notice {
+    border: 1px solid #d1a900;
+    background: #fff3cd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .steps {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid #999;
+    background: #f0f0f0;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 20px;
+    background: #fff;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  th { background: #f5f5f5; }
+  .yes { color: #1b5e20; font-weight: 600; }
+  .no { color: #c62828; font-weight: 600; }
+  .na { color: #888; }
+  .pending { color: #888; font-style: italic; }
+</style>
+</head>
+<body>
+
+  <h1>WebGL Fingerprint Detector — POSITIVE Test</h1>
+
+  <div class="notice">
+    <strong>Local diagnostic page only.</strong> Not part of SecureAuthX.
+    This page makes real WebGL API calls to exercise every WebGL
+    fingerprint-detection branch identified in the code audit. It does
+    not print or transmit any actual GPU/vendor string — only whether
+    each call executed and returned a value. Nothing is sent anywhere.
+  </div>
+
+  <div class="steps">
+    <strong>How to use this page:</strong>
+    <ol>
+      <li>Open the SecureAuthX popup now and check the Fingerprinting section — it should currently show "No fingerprinting techniques detected" (this is the "before" baseline).</li>
+      <li>Close the popup. Click "Run WebGL Test Calls" below.</li>
+      <li>Re-open the SecureAuthX popup and re-scan this page. Check the Fingerprinting section again (the "after" state).</li>
+      <li>Expected: it should now list <code>webglDebugInfo</code> exactly once, regardless of how many of the branches below succeeded — see the report for why.</li>
+    </ol>
+    This page can only prove which calls it made and whether they executed.
+    It cannot see into the SecureAuthX popup itself (by design — extensions
+    don't expose their internal state to arbitrary web pages) — the popup
+    check above is a required manual step to complete the test.
+  </div>
+
+  <button id="runBtn">Run WebGL Test Calls</button>
+
+  <h2>WebGL1 (WebGLRenderingContext)</h2>
+  <table id="webgl1Table">
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Context created</td><td id="w1-ctx" class="pending">not run yet</td></tr>
+    <tr><td>getExtension("WEBGL_debug_renderer_info")</td><td id="w1-ext" class="pending">not run yet</td></tr>
+    <tr><td>getExtension("webgl_debug_renderer_info") (lowercase variant)</td><td id="w1-ext-lc" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(ext.UNMASKED_VENDOR_WEBGL) — via extension object</td><td id="w1-vendor-ext" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(ext.UNMASKED_RENDERER_WEBGL) — via extension object</td><td id="w1-renderer-ext" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(0x9245) — raw constant, no extension lookup first</td><td id="w1-vendor-raw" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(0x9246) — raw constant, no extension lookup first</td><td id="w1-renderer-raw" class="pending">not run yet</td></tr>
+  </table>
+
+  <h2>WebGL2 (WebGL2RenderingContext)</h2>
+  <table id="webgl2Table">
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Context created</td><td id="w2-ctx" class="pending">not run yet</td></tr>
+    <tr><td>getExtension("WEBGL_debug_renderer_info")</td><td id="w2-ext" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(ext.UNMASKED_VENDOR_WEBGL) — via extension object</td><td id="w2-vendor-ext" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(ext.UNMASKED_RENDERER_WEBGL) — via extension object</td><td id="w2-renderer-ext" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(0x9245) — raw constant, no extension lookup first</td><td id="w2-vendor-raw" class="pending">not run yet</td></tr>
+    <tr><td>getParameter(0x9246) — raw constant, no extension lookup first</td><td id="w2-renderer-raw" class="pending">not run yet</td></tr>
+  </table>
+
+  <p id="summary"></p>
+
+  <script>
+    function setCell(id, ok, label) {
+      const el = document.getElementById(id);
+      el.textContent = label;
+      el.className = ok === true ? "yes" : ok === false ? "no" : "na";
+    }
+
+    function testContext(prefix, contextType) {
+      const canvas = document.createElement("canvas");
+      // Never appended to the document — irrelevant here, since the
+      // hidden/offscreen heuristic only applies to the CANVAS detector,
+      // not the WebGL detector under test on this page.
+      let gl = null;
+      try {
+        gl = canvas.getContext(contextType);
+      } catch (e) {
+        gl = null;
+      }
+
+      if (!gl) {
+        setCell(`${prefix}-ctx`, false, "not available in this browser");
+        setCell(`${prefix}-ext`, null, "skipped (no context)");
+        if (prefix === "w1") setCell(`${prefix}-ext-lc`, null, "skipped (no context)");
+        setCell(`${prefix}-vendor-ext`, null, "skipped (no context)");
+        setCell(`${prefix}-renderer-ext`, null, "skipped (no context)");
+        setCell(`${prefix}-vendor-raw`, null, "skipped (no context)");
+        setCell(`${prefix}-renderer-raw`, null, "skipped (no context)");
+        return;
+      }
+      setCell(`${prefix}-ctx`, true, "created successfully");
+
+      // --- getExtension("WEBGL_debug_renderer_info") ---
+      let ext = null;
+      try {
+        ext = gl.getExtension("WEBGL_debug_renderer_info");
+        setCell(`${prefix}-ext`, true, ext ? "call executed — extension AVAILABLE" : "call executed — extension returned null (unsupported/blocked by this browser)");
+      } catch (e) {
+        setCell(`${prefix}-ext`, false, "call threw an error");
+      }
+
+      // Lowercase-variant call, WebGL1 only (tests case-insensitive matching
+      // in the detector; harmless to call twice on the real API).
+      if (prefix === "w1") {
+        try {
+          gl.getExtension("webgl_debug_renderer_info");
+          setCell(`${prefix}-ext-lc`, true, "call executed");
+        } catch (e) {
+          setCell(`${prefix}-ext-lc`, false, "call threw an error");
+        }
+      }
+
+      // --- getParameter via the extension's own constants ---
+      if (ext) {
+        try {
+          const v = gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
+          setCell(`${prefix}-vendor-ext`, true, v !== undefined && v !== null ? "call executed — returned a value" : "call executed — returned no value");
+        } catch (e) {
+          setCell(`${prefix}-vendor-ext`, false, "call threw an error");
+        }
+        try {
+          const r = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+          setCell(`${prefix}-renderer-ext`, true, r !== undefined && r !== null ? "call executed — returned a value" : "call executed — returned no value");
+        } catch (e) {
+          setCell(`${prefix}-renderer-ext`, false, "call threw an error");
+        }
+      } else {
+        setCell(`${prefix}-vendor-ext`, null, "skipped (extension unavailable)");
+        setCell(`${prefix}-renderer-ext`, null, "skipped (extension unavailable)");
+      }
+
+      // --- getParameter via the RAW numeric constants directly, with NO
+      // prior getExtension call in this exact call path -- this exercises
+      // the detector's argument-value-only matching independent of
+      // whether the extension object was ever obtained. ---
+      try {
+        const v = gl.getParameter(0x9245);
+        setCell(`${prefix}-vendor-raw`, true, v !== undefined && v !== null ? "call executed — returned a value" : "call executed — returned no value (browser may require the extension to be requested first)");
+      } catch (e) {
+        setCell(`${prefix}-vendor-raw`, false, "call threw an error");
+      }
+      try {
+        const r = gl.getParameter(0x9246);
+        setCell(`${prefix}-renderer-raw`, true, r !== undefined && r !== null ? "call executed — returned a value" : "call executed — returned no value (browser may require the extension to be requested first)");
+      } catch (e) {
+        setCell(`${prefix}-renderer-raw`, false, "call threw an error");
+      }
+    }
+
+    document.getElementById("runBtn").addEventListener("click", () => {
+      // Deferred until a user click (well after page load / hook install),
+      // per the test requirement that calls happen after the extension has
+      // had time to install its MAIN-world hooks.
+      testContext("w1", "webgl");
+      testContext("w2", "webgl2");
+      document.getElementById("summary").textContent =
+        "All test calls attempted. Now check the SecureAuthX popup's Fingerprinting section for \"webglDebugInfo\".";
+    });
+  </script>
+
+</body>
+</html>

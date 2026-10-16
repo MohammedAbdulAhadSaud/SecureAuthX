@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX Batch 3 — Canvas NEGATIVE / Control Test (LOCAL DIAGNOSTIC ONLY)</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; margin-top: 24px; }
+  .notice {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .steps {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  canvas {
+    border: 1px solid #ccc;
+    display: block;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 20px;
+    background: #fff;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  th { background: #f5f5f5; }
+  .yes { color: #1b5e20; font-weight: 600; }
+</style>
+</head>
+<body>
+
+  <h1>Canvas Fingerprint Detector — NEGATIVE / Control Test</h1>
+
+  <div class="notice">
+    <strong>Local diagnostic page only.</strong> Not part of SecureAuthX.
+    This page draws ordinary, visible content on a normal-sized canvas —
+    the kind any chart, image editor, or drawing app does — and reads it
+    back with <code>toDataURL()</code>/<code>getImageData()</code>, the
+    same way a real "download my image" or "export chart" feature would.
+    Nothing is sent anywhere.
+  </div>
+
+  <div class="steps">
+    <strong>How to use this page:</strong> open the SecureAuthX popup and
+    check the Fingerprinting section both before and after this page
+    renders (everything runs automatically on load — no button needed,
+    since none of this is meant to look suspicious in the first place).
+    Expected: <code>Fingerprinting 0</code>, "No fingerprinting techniques
+    detected", no <code>canvasFingerprint</code> entry.
+  </div>
+
+  <canvas id="drawingCanvas" width="300" height="150"></canvas>
+
+  <table id="resultsTable">
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Canvas size</td><td id="size"></td></tr>
+    <tr><td>Attached to the document</td><td id="attached"></td></tr>
+    <tr><td>Visible (not CSS-hidden)</td><td id="visible"></td></tr>
+    <tr><td>Ordinary content drawn</td><td id="drawn"></td></tr>
+    <tr><td>toDataURL() call</td><td id="dataurl"></td></tr>
+    <tr><td>getImageData() call</td><td id="imagedata"></td></tr>
+  </table>
+
+  <script>
+    function setCell(id, label) {
+      const el = document.getElementById(id);
+      el.textContent = label;
+      el.className = "yes";
+    }
+
+    const canvas = document.getElementById("drawingCanvas");
+    // Normal size, well above the detector's <=16x16 "tiny" threshold,
+    // already appended to the document via the markup above, and not
+    // hidden by any CSS -- this is the negative/control condition.
+    setCell("size", `${canvas.width} x ${canvas.height} (well above the 16x16 threshold)`);
+    setCell("attached", document.contains(canvas) ? "yes" : "no");
+    const style = window.getComputedStyle(canvas);
+    setCell("visible", (style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) !== 0) ? "yes, fully visible" : "no");
+
+    const ctx = canvas.getContext("2d");
+
+    // Ordinary drawing -- a simple chart-like bar graph, entirely visible
+    // on the page, exactly like a real chart/export feature would render
+    // before letting the user save or share the image.
+    ctx.fillStyle = "#fafafa";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#336699";
+    ctx.fillRect(20, 80, 40, 60);
+    ctx.fillRect(80, 40, 40, 100);
+    ctx.fillRect(140, 60, 40, 80);
+    ctx.fillRect(200, 20, 40, 120);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.font = "14px sans-serif";
+    ctx.fillText("Example chart (ordinary canvas use)", 10, 20);
+    setCell("drawn", "bar chart drawn to the visible canvas above");
+
+    // The same export/readback calls a real "download image" or
+    // "export chart" button would make -- on a normal, visible canvas.
+    canvas.toDataURL();
+    setCell("dataurl", "call executed, on a visible 300x150 canvas");
+
+    ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setCell("imagedata", "call executed, on a visible 300x150 canvas");
+  </script>
+
+</body>
+</html>

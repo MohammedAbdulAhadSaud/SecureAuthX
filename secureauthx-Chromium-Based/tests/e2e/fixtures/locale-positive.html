@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Locale POSITIVE</title>
+</head>
+<body>
+  <h1>Locale Detector — POSITIVE</h1>
+  <p>Reads both <code>navigator.language</code> and
+  <code>navigator.languages</code> — the exact pair validated against the
+  real detector during Batch 3 (both share the single "locale" technique,
+  by design, so this exercises both without expecting two separate
+  entries).</p>
+  <button id="runBtn">Run</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const lang = navigator.language;
+      const langs = navigator.languages;
+      // Never display the actual locale values -- only that the calls executed.
+      document.getElementById("result").textContent = "calls executed";
+    });
+  </script>
+</body>
+</html>

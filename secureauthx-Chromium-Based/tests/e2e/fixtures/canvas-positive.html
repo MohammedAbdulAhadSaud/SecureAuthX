@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX Batch 3 — Canvas POSITIVE Test (LOCAL DIAGNOSTIC ONLY)</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; margin-top: 24px; }
+  .notice {
+    border: 1px solid #d1a900;
+    background: #fff3cd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .steps {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid #999;
+    background: #f0f0f0;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 20px;
+    background: #fff;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  th { background: #f5f5f5; }
+  .yes { color: #1b5e20; font-weight: 600; }
+  .no { color: #c62828; font-weight: 600; }
+  .pending { color: #888; font-style: italic; }
+  #tinyCanvasVisible {
+    border: 1px solid #999;
+    image-rendering: pixelated;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Canvas Fingerprint Detector — POSITIVE Test</h1>
+
+  <div class="notice">
+    <strong>Local diagnostic page only.</strong> Not part of SecureAuthX.
+    This page creates canvases that match each of the detector's
+    "hidden/offscreen" conditions and calls <code>toDataURL()</code> /
+    <code>getImageData()</code> on them. It never prints or transmits
+    actual pixel data — only whether each call executed. Nothing is sent
+    anywhere.
+  </div>
+
+  <div class="steps">
+    <strong>How to use this page:</strong>
+    <ol>
+      <li>Open the SecureAuthX popup now and check the Fingerprinting section — it should currently show "No fingerprinting techniques detected" (the "before" baseline).</li>
+      <li>Close the popup. Click "Run Canvas Test Calls" below.</li>
+      <li>Re-open the SecureAuthX popup and re-scan this page.</li>
+      <li>Expected: it should now list <code>canvasFingerprint</code> exactly once, regardless of how many of the six sub-tests below trigger the detector — the extension deduplicates by technique name, not by call count.</li>
+    </ol>
+    This page can only prove which calls it made in the page. It cannot
+    see into the SecureAuthX popup itself — checking the popup is a
+    required manual step.
+  </div>
+
+  <button id="runBtn">Run Canvas Test Calls</button>
+
+  <h2>Test canvases on this page</h2>
+  <p>
+    A visible 16×16 canvas is shown here so you can confirm it's genuinely tiny: 
+    <canvas id="tinyCanvasVisible" width="16" height="16" style="width:64px;height:64px;"></canvas>
+  </p>
+
+  <table id="resultsTable">
+    <tr><th>Condition (matches detector's three OR-ed checks)</th><th>toDataURL() result</th><th>getImageData() result</th></tr>
+    <tr>
+      <td><strong>Detached</strong> — canvas created via <code>document.createElement</code>, never appended to the document at all</td>
+      <td id="detached-dataurl" class="pending">not run yet</td>
+      <td id="detached-imagedata" class="pending">not run yet</td>
+    </tr>
+    <tr>
+      <td><strong>CSS-hidden</strong> — appended to the document, normal size (200×100), but <code>style.display = "none"</code></td>
+      <td id="hidden-dataurl" class="pending">not run yet</td>
+      <td id="hidden-imagedata" class="pending">not run yet</td>
+    </tr>
+    <tr>
+      <td><strong>Tiny</strong> — appended to the document, visible, but 16×16 (the canvas shown above)</td>
+      <td id="tiny-dataurl" class="pending">not run yet</td>
+      <td id="tiny-imagedata" class="pending">not run yet</td>
+    </tr>
+  </table>
+
+  <p id="summary"></p>
+
+  <script>
+    function setCell(id, ok, label) {
+      const el = document.getElementById(id);
+      el.textContent = label;
+      el.className = ok ? "yes" : "no";
+    }
+
+    function drawSomething(ctx) {
+      // Trivial, fixed, non-identifying content -- matches the realistic
+      // "render something, then read it back" pattern without drawing
+      // anything sensitive (no real personal data, no user input).
+      ctx.fillStyle = "#336699";
+      ctx.fillRect(0, 0, 10, 10);
+      ctx.font = "10px sans-serif";
+      ctx.fillText("test", 0, 10);
+    }
+
+    function testDetached() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 200;
+      canvas.height = 100;
+      // Deliberately never appended anywhere -- document.contains() will be false.
+      const ctx = canvas.getContext("2d");
+      drawSomething(ctx);
+
+      try {
+        canvas.toDataURL();
+        setCell("detached-dataurl", true, "call executed (canvas never attached to the document)");
+      } catch (e) {
+        setCell("detached-dataurl", false, "call threw an error");
+      }
+      try {
+        ctx.getImageData(0, 0, canvas.width, canvas.height);
+        setCell("detached-imagedata", true, "call executed (canvas never attached to the document)");
+      } catch (e) {
+        setCell("detached-imagedata", false, "call threw an error");
+      }
+    }
+
+    function testCssHidden() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 200;
+      canvas.height = 100;
+      canvas.style.display = "none";
+      document.body.appendChild(canvas); // attached, but hidden via CSS
+      const ctx = canvas.getContext("2d");
+      drawSomething(ctx);
+
+      try {
+        canvas.toDataURL();
+        setCell("hidden-dataurl", true, "call executed (canvas attached but display:none)");
+      } catch (e) {
+        setCell("hidden-dataurl", false, "call threw an error");
+      }
+      try {
+        ctx.getImageData(0, 0, canvas.width, canvas.height);
+        setCell("hidden-imagedata", true, "call executed (canvas attached but display:none)");
+      } catch (e) {
+        setCell("hidden-imagedata", false, "call threw an error");
+      }
+    }
+
+    function testTiny() {
+      // Reuses the visible 16x16 canvas already in the page markup, so
+      // you can see with your own eyes that it's genuinely tiny (64px
+      // on-screen via CSS scaling, but its actual width/height attributes
+      // -- what the detector reads -- are 16x16).
+      const canvas = document.getElementById("tinyCanvasVisible");
+      const ctx = canvas.getContext("2d");
+      drawSomething(ctx);
+
+      try {
+        canvas.toDataURL();
+        setCell("tiny-dataurl", true, "call executed (canvas is 16×16, visible, attached)");
+      } catch (e) {
+        setCell("tiny-dataurl", false, "call threw an error");
+      }
+      try {
+        ctx.getImageData(0, 0, canvas.width, canvas.height);
+        setCell("tiny-imagedata", true, "call executed (canvas is 16×16, visible, attached)");
+      } catch (e) {
+        setCell("tiny-imagedata", false, "call threw an error");
+      }
+    }
+
+    document.getElementById("runBtn").addEventListener("click", () => {
+      // Deferred until a user click, well after page load, so the
+      // extension's MAIN-world hooks have had time to install.
+      testDetached();
+      testCssHidden();
+      testTiny();
+      document.getElementById("summary").textContent =
+        "All test calls attempted. Now check the SecureAuthX popup's Fingerprinting section for \"canvasFingerprint\".";
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Combined Main-Page + Multi-Iframe Signals</title>
+</head>
+<body>
+  <h1>Combined main-page + multi-iframe container</h1>
+  <p>
+    This top-level page performs ITS OWN fingerprinting call
+    (<code>navigator.language</code>/<code>locale</code>), AND contains
+    TWO iframes, each reusing an existing, already-proven fixture to
+    perform a DIFFERENT technique: iframe #1 loads
+    <code>canvas-positive.html</code> (<code>canvasFingerprint</code>),
+    iframe #2 loads <code>webgl-extensions-positive.html</code>
+    (<code>webglExtensionEnumeration</code>). The test drives each
+    iframe's own "Run" button. Expected result: all three distinct
+    techniques appear together in the aggregated popup result.
+  </p>
+  <div id="mainResult">not run yet</div>
+  <iframe id="frame1" src="canvas-positive.html" width="400" height="150" title="iframe 1: canvas"></iframe>
+  <iframe id="frame2" src="webgl-extensions-positive.html" width="400" height="150" title="iframe 2: webgl extensions"></iframe>
+  <script>
+    // Main-page's own fingerprinting call.
+    navigator.language;
+    document.getElementById("mainResult").textContent = "main-page call executed";
+  </script>
+</body>
+</html>

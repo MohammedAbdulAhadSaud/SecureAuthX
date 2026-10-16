@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Cross-Origin Iframe Container</title>
+</head>
+<body>
+  <h1>Cross-origin iframe container page</h1>
+  <p>
+    <strong>This top-level page performs NO fingerprinting behavior of its
+    own.</strong> The iframe below is served from a DIFFERENT port than
+    this container page — a different port means a different origin per
+    the browser's same-origin policy, giving a simple, realistic way to
+    test cross-origin iframe coverage without needing real separate
+    domains. The iframe's own content
+    (<code>iframe-blindspot-inner.html</code>, the same fixture reused
+    from the same-origin test) performs the fingerprinting call
+    automatically on load.
+  </p>
+  <iframe id="crossOriginFrame" width="400" height="150" title="cross-origin iframe inner content"></iframe>
+  <script>
+    // The cross-origin URL (a different port) is injected by the test
+    // itself via a query parameter, since the exact port used varies per
+    // test run and must not be hardcoded here.
+    const params = new URLSearchParams(window.location.search);
+    const crossOriginUrl = params.get("crossOriginSrc");
+    if (crossOriginUrl) {
+      document.getElementById("crossOriginFrame").src = crossOriginUrl;
+    }
+  </script>
+</body>
+</html>

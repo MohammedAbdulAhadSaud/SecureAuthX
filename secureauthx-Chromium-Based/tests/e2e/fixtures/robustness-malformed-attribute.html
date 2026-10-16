@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Robustness: malformed signal attribute</title>
+<script>
+  // Runs synchronously, essentially immediately as the parser reaches
+  // this tag -- well before content.js's document_idle listener attaches
+  // -- deliberately writing invalid data into the exact attribute
+  // page-hook.js uses, simulating an adversarial page trying to corrupt
+  // or confuse the signal channel before the legitimate consumer reads
+  // it. This must not crash the extension or corrupt unrelated signals.
+  document.documentElement.setAttribute("data-sax-signals", "{not valid json at all!!!");
+</script>
+</head>
+<body>
+  <h1>Robustness: malformed signal attribute</h1>
+  <p>This page writes invalid JSON into <code>data-sax-signals</code> as
+  early as possible, before running a real, legitimate fingerprint call.
+  The extension must not crash, and must still correctly detect the real
+  call that follows.</p>
+  <button id="runBtn">Run real fingerprint call after the malformed write</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", () => {
+      Intl.DateTimeFormat().resolvedOptions().timeZone;
+      document.getElementById("result").textContent = "call executed";
+    });
+  </script>
+</body>
+</html>

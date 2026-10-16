@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Timezone NEGATIVE / Control</title>
+</head>
+<body>
+  <h1>Timezone Detector — NEGATIVE / Control</h1>
+  <p>Deliberately never calls <code>Intl.DateTimeFormat().resolvedOptions()</code>
+  anywhere on this page. Displays a fixed, hardcoded label instead of a
+  computed one, which is what a page avoiding this API looks like.</p>
+  <div id="result">Static label — no timezone API used</div>
+</body>
+</html>

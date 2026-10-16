@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX E2E — Font Enumeration NEGATIVE (word-wrap false-positive fix)</title>
+</head>
+<body>
+  <h1>Font Enumeration — Word-Wrap Layout (the false-positive this batch fixes)</h1>
+  <p>Simulates ordinary canvas paragraph/word-wrap layout: measuring each
+  word of a real paragraph, one at a time, in a SINGLE constant font, to
+  decide line breaks — exactly the kind of legitimate canvas text
+  rendering the OLD ">15 total calls" heuristic would have incorrectly
+  flagged as font enumeration. The improved, distinct-font-aware detector
+  should stay silent here.</p>
+  <button id="runBtn">Run word-wrap layout (30+ measureText calls, 1 font)</button>
+  <div id="result">not run yet</div>
+  <script>
+    document.getElementById("runBtn").addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 300;
+      const ctx = canvas.getContext("2d");
+      ctx.font = "16px sans-serif"; // ONE constant font for the entire layout pass
+
+      const paragraph =
+        "This is an ordinary paragraph of text that a canvas based rich " +
+        "text editor or a game dialogue box might need to word wrap across " +
+        "several lines by measuring each individual word one at a time " +
+        "before deciding where every line break should go in the layout";
+      const words = paragraph.split(" ");
+
+      let callCount = 0;
+      let lineWidth = 0;
+      const maxWidth = 380;
+      for (const word of words) {
+        const metrics = ctx.measureText(word + " ");
+        callCount++;
+        lineWidth += metrics.width;
+        if (lineWidth > maxWidth) lineWidth = metrics.width;
+      }
+
+      document.getElementById("result").textContent =
+        `word-wrap layout complete: ${callCount} measureText calls, 1 font used throughout`;
+    });
+  </script>
+</body>
+</html>

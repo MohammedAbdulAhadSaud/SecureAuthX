@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>SecureAuthX Batch 3 — Audio POSITIVE Test (LOCAL DIAGNOSTIC ONLY)</title>
+<style>
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #1a1a1a;
+    background: #fafafa;
+  }
+  h1 { font-size: 18px; }
+  h2 { font-size: 14px; margin-top: 24px; }
+  .notice {
+    border: 1px solid #d1a900;
+    background: #fff3cd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .steps {
+    border: 1px solid #90caf9;
+    background: #e3f2fd;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid #999;
+    background: #f0f0f0;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 20px;
+    background: #fff;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  th { background: #f5f5f5; }
+  .yes { color: #1b5e20; font-weight: 600; }
+  .no { color: #c62828; font-weight: 600; }
+  .pending { color: #888; font-style: italic; }
+</style>
+</head>
+<body>
+
+  <h1>Audio Fingerprint Detector — POSITIVE Test</h1>
+
+  <div class="notice">
+    <strong>Local diagnostic page only.</strong> Not part of SecureAuthX.
+    This page runs the textbook OfflineAudioContext render-then-read
+    pattern (oscillator → compressor → offline render → read samples)
+    that the current detector is built to catch. No audio is ever played
+    out loud — rendering happens silently, off-screen. This page never
+    prints or transmits the actual sample values, only whether each step
+    executed and how many samples were read. Nothing is sent anywhere.
+  </div>
+
+  <div class="steps">
+    <strong>How to use this page:</strong>
+    <ol>
+      <li>Open the SecureAuthX popup now and check the Fingerprinting section — it should currently show "No fingerprinting techniques detected" (the "before" baseline).</li>
+      <li>Close the popup. Click "Run Audio Fingerprint Sequence" below.</li>
+      <li>Wait for the table to show "rendering complete" (offline rendering is silent and near-instant, but is genuinely asynchronous).</li>
+      <li>Re-open the SecureAuthX popup and re-scan this page.</li>
+      <li>Expected: it should now list <code>audioFingerprint</code> exactly once.</li>
+    </ol>
+    This page can only prove which calls it made in the page. It cannot
+    see into the SecureAuthX popup itself — checking the popup is a
+    required manual step.
+  </div>
+
+  <button id="runBtn">Run Audio Fingerprint Sequence</button>
+
+  <table id="resultsTable">
+    <tr><th>Step</th><th>Result</th></tr>
+    <tr><td>1. OfflineAudioContext created</td><td id="s1" class="pending">not run yet</td></tr>
+    <tr><td>2. Oscillator node created</td><td id="s2" class="pending">not run yet</td></tr>
+    <tr><td>3. DynamicsCompressor node created</td><td id="s3" class="pending">not run yet</td></tr>
+    <tr><td>4. Nodes connected (oscillator → compressor → destination)</td><td id="s4" class="pending">not run yet</td></tr>
+    <tr><td>5. oscillator.start() called</td><td id="s5" class="pending">not run yet</td></tr>
+    <tr><td>6. offlineCtx.startRendering() called</td><td id="s6" class="pending">not run yet</td></tr>
+    <tr><td>7. Rendering promise resolved (AudioBuffer returned)</td><td id="s7" class="pending">not run yet</td></tr>
+    <tr><td>8. getChannelData(0) called on THAT exact resolved buffer</td><td id="s8" class="pending">not run yet</td></tr>
+    <tr><td>9. Samples actually read/inspected</td><td id="s9" class="pending">not run yet</td></tr>
+  </table>
+
+  <p id="summary"></p>
+
+  <script>
+    function setCell(id, ok, label) {
+      const el = document.getElementById(id);
+      el.textContent = label;
+      el.className = ok ? "yes" : "no";
+    }
+
+    document.getElementById("runBtn").addEventListener("click", () => {
+      // Deferred until a user click, well after page load, so the
+      // extension's MAIN-world hooks have had time to install.
+      const summary = document.getElementById("summary");
+      summary.textContent = "Rendering… (silent, off-screen, usually completes in well under a second)";
+
+      let offlineCtx;
+      try {
+        // 1 channel, 1 second at 44.1kHz -- a standard, small offline
+        // render, matching the well-documented "audio fingerprint via
+        // OfflineAudioContext" recipe (oscillator + dynamics compressor).
+        offlineCtx = new OfflineAudioContext(1, 44100, 44100);
+        setCell("s1", true, "created (1 channel, 44100 samples, 44100 Hz)");
+      } catch (e) {
+        setCell("s1", false, "threw an error: " + e.message);
+        summary.textContent = "Could not create an OfflineAudioContext in this browser.";
+        return;
+      }
+
+      let oscillator, compressor;
+      try {
+        oscillator = offlineCtx.createOscillator();
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(10000, offlineCtx.currentTime);
+        setCell("s2", true, "created (triangle wave, 10kHz)");
+      } catch (e) {
+        setCell("s2", false, "threw an error: " + e.message);
+      }
+
+      try {
+        compressor = offlineCtx.createDynamicsCompressor();
+        setCell("s3", true, "created");
+      } catch (e) {
+        setCell("s3", false, "threw an error: " + e.message);
+      }
+
+      try {
+        oscillator.connect(compressor);
+        compressor.connect(offlineCtx.destination);
+        setCell("s4", true, "connected: oscillator → compressor → destination");
+      } catch (e) {
+        setCell("s4", false, "threw an error: " + e.message);
+      }
+
+      try {
+        oscillator.start(0);
+        setCell("s5", true, "called");
+      } catch (e) {
+        setCell("s5", false, "threw an error: " + e.message);
+      }
+
+      let renderingPromise;
+      try {
+        renderingPromise = offlineCtx.startRendering();
+        setCell("s6", true, "called — this is the exact call SecureAuthX's hook wraps");
+      } catch (e) {
+        setCell("s6", false, "threw an error: " + e.message);
+        summary.textContent = "startRendering() failed synchronously.";
+        return;
+      }
+
+      renderingPromise.then(
+        (renderedBuffer) => {
+          setCell("s7", true, "resolved — AudioBuffer received");
+
+          // This is the critical step: getChannelData() must be called on
+          // THIS EXACT buffer object (the one the promise resolved to),
+          // not a different one, for the detector's WeakSet-based check
+          // to match.
+          try {
+            const channelData = renderedBuffer.getChannelData(0);
+            setCell("s8", true, "called on the resolved buffer");
+
+            // Actually read/inspect the samples (per the test requirement)
+            // without printing or transmitting the raw values -- only a
+            // count and a boolean "did we get real numbers back" check.
+            let sampleCount = channelData.length;
+            let sawNumericSample = sampleCount > 0 && typeof channelData[0] === "number" && !Number.isNaN(channelData[0]);
+            setCell("s9", true, `read ${sampleCount} samples (first sample is a valid number: ${sawNumericSample})`);
+            summary.textContent = "Sequence complete. Now check the SecureAuthX popup's Fingerprinting section for \"audioFingerprint\".";
+          } catch (e) {
+            setCell("s8", false, "threw an error: " + e.message);
+            summary.textContent = "getChannelData() failed.";
+          }
+        },
+        (err) => {
+          setCell("s7", false, "rendering was rejected/aborted: " + (err && err.message));
+          summary.textContent = "Rendering failed — cannot complete the sequence.";
+        }
+      );
+    });
+  </script>
+
+</body>
+</html>

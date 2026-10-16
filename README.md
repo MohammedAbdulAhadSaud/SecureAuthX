@@ -21,7 +21,7 @@ The project aims to make everyday browsing safer by making website risks easier 
 
 ---
 
-## Demo Video
+## Demo
 
 The demonstration video showcases SecureAuthX's existing password-management and website security-analysis features.
 

@@ -236,12 +236,13 @@ Other directories may contain content scripts, assets, and additional implementa
 
 ---
 
-## Demo
+## Demo Video
 
-- **Demo video:** [Add your video link]
-- **Repository:** [Add your GitHub repository URL]
+The demonstration video showcases SecureAuthX's existing password-management and website security-analysis features.
 
-The demonstration should show the working extension using dummy credentials and safe test websites. Proposed features should be labelled clearly so viewers can distinguish implemented functionality from future development.
+**Video:** [Watch the SecureAuthX Demo](/docs/video1.webm)
+
+*This video is provided for hackathon submission and evaluation. Any proposed features shown are labelled accordingly and should not be interpreted as implemented functionality.*
 
 ---
 
